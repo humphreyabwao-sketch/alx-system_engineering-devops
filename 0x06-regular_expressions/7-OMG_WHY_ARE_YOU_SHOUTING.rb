@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
-# This script accepts one argument and passes it to a regular expression,
-# matching method
-# This script should output: [SENDER],[RECEIVER],[FLAGS]
 
-puts ARGV[0].scan(/(?<=from:|to:|flags:).+?(?=\])/).join(',')
+regex = /[A-Z]/
+input = ARGV[0]
+
+matches = input.scan(regex)
+commit_word = matches.join('')
+
+puts commit_word
