@@ -1,0 +1,12 @@
+#!/bin/bash
+
+netstat -tuln | awk '/^tcp/ || /^udp/ {print $1,$4,$NF}' | while read proto local_address state; do
+if [[ "$state" == "LISTEN" ]]; then
+	if [[ "$local_address" =~ ^([^:]+):([0-9]+)$ ]]; then
+		ip=${BASH_REMATCH[1]}
+		port=${BASH_REMATCH[2]}
+		program=$(lsof -i :$port -s TCP:LISTEN -F n | sed 's/^n//')
+		echo "$proto\t$ip:$port\t$program"
+	fi
+fi
+done
