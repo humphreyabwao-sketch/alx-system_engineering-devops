@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 netstat -tuln | awk '/^tcp/ || /^udp/ {print $1,$4,$NF}' | while read proto local_address state; do
 if [[ "$state" == "LISTEN" ]]; then
