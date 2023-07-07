@@ -1,12 +1,26 @@
 #!/usr/bin/env bash
 
-netstat -tuln | awk '/^tcp/ || /^udp/ {print $1,$4,$NF}' | while read proto local_address state; do
-if [[ "$state" == "LISTEN" ]]; then
-	if [[ "$local_address" =~ ^([^:]+):([0-9]+)$ ]]; then
-		ip=${BASH_REMATCH[1]}
-		port=${BASH_REMATCH[2]}
-		program=$(lsof -i :$port -s TCP:LISTEN -F n | sed 's/^n//')
-		echo "$proto\t$ip:$port\t$program"
-	fi
-fi
+# Run netstat command to get the listening ports and associated processes
+netstat_output=$(netstat -tlnp)
+
+# Display the header
+echo "Active Internet connections (only servers)"
+echo "Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name"
+
+# Filter and format the output to display listening sockets with PID and program name
+echo "$netstat_output" | awk '/^tcp|^udp/ && /LISTEN/ {print $1, $4, $7}' | while read -r protocol local_address pid_program; do
+# Extract the IP address and port number from the local address
+    ip_address=$(echo "$local_address" | awk -F':' '{print $1}')
+    port=$(echo "$local_address" | awk -F':' '{print $NF}')
+    
+# Get the program name corresponding to the PID
+    program_name=$(ps -p "$pid_program" -o comm= 2>/dev/null)
+    
+# Display the formatted output
+    echo "$protocol\t0\t0\t$ip_address:$port\t\t\tLISTEN\t\t$pid_program/$program_name"
 done
+
+# Display the footer
+echo "Active UNIX domain sockets (only servers)"
+echo "Proto RefCnt Flags       Type       State         I-Node   PID/Program name    Path"
+echo "$netstat_output" | awk '/^unix/ && /LISTEN/ {print $1, $2, $3, $4, $5, $6}' | sed 's/[\[\]]//g'
