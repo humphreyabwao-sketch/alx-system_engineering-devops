@@ -1,10 +1,52 @@
-#!/usr/bin/env bash
-# script that doubles the number of webservers and adds new configs
+#!/bin/bash
 
-# install nginx
-apt-get  update ; apt-get -y install nginx
+# Function to install Nginx
+install_nginx()
+{
+if ! command -v nginx &>/dev/null; then
+        sudo apt update
+        sudo apt install -y nginx
+    fi
+}
 
-string="http {\n\tadd_header X-Served-By \"$HOSTNAME\";"
-sudo sed -i "s/http {/$string/" /etc/nginx/nginx.conf
-# restart nginx
-sudo service nginx restart
+# Function to configure Nginx with custom header
+configure_nginx()
+{
+    local hostname
+    hostname=$(hostname)
+
+    # Create an Nginx configuration file for the custom header
+    cat <<EOF | sudo tee /etc/nginx/sites-available/custom_header > /dev/null
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    server_name _;
+
+    location / {
+        add_header X-Served-By $hostname;
+        root /var/www/html;
+        index index.html index.htm;
+    }
+}
+EOF
+
+    # Create a symbolic link to enable the configuration
+    sudo ln -s /etc/nginx/sites-available/custom_header /etc/nginx/sites-enabled/
+
+    # Test the Nginx configuration
+    sudo nginx -t
+
+    # Reload Nginx to apply the changes
+    sudo systemctl reload nginx
+}
+
+# Main execution
+main()
+{
+    install_nginx
+    configure_nginx
+}
+
+# Run the main function
+main
