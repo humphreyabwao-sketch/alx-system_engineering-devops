@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# This script displays information about subdomains.
+
+# Function to fetch and display DNS information
+fetch_dns_info() {
+    subdomain="$1"
+    domain="$2"
+    dig_output=$(dig "$subdomain.$domain" +short)
+    record_type=$(dig "$subdomain.$domain" +short -t ANY | awk 'NR==1{print $2}')
+    echo "The subdomain $subdomain is a $record_type record and points to $dig_output"
+}
+
+# Check if both domain and subdomain are provided as arguments
+if [ $# -eq 2 ]; then
+    subdomain="$2"
+    domain="$1"
+    fetch_dns_info "$subdomain" "$domain"
+else
+    # Display information for default subdomains in the specified order
+    fetch_dns_info "www" "$1"
+    fetch_dns_info "lb-01" "$1"
+    fetch_dns_info "web-01" "$1"
+    fetch_dns_info "web-02" "$1"
+fi
