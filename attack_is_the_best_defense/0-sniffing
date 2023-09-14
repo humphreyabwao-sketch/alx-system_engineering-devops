@@ -1,0 +1,21 @@
+from scapy.all import *
+
+def packet_callback(packet):
+    print(packet.show())
+
+if __name__ == "__main__":
+    # Ensure this code block is only executed when the script is run directly,
+    # not when it's imported as a module.
+
+    # Set the network interface you want to sniff on (e.g., 'eth0' or 'wlan0')
+    iface = "eth0"  # Replace with your network interface name
+
+    print(f"Sniffing on interface {iface}... Press Ctrl+C to stop.")
+
+    try:
+        # Start packet capturing
+        sniff(iface=iface, filter='ip', prn=packet_callback, store=0)
+    except KeyboardInterrupt:
+        # Handle Ctrl+C gracefully
+        print("Packet capture stopped.")
+
