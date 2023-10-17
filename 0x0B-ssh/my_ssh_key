@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Generate SSH key pair with a custom name
+ssh-keygen -t rsa -b 4096 -C "humphreyabwao@gmail.com" -f ~/.ssh/my_ssh_key
